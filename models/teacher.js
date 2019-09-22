@@ -22,7 +22,11 @@ const teacherSchema = new Schema({
     dept: {
         type : String,
         required : true
-    }
+    },
+    studentId : [{ 
+        type : Schema.Types.ObjectId,
+        ref : 'Student'
+    }]
 });
 
 module.exports = mongoose.model('Teacher', teacherSchema);
