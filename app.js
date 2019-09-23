@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const adminRoutes = require('./routes/admin');
 const studentRoutes = require('./routes/student');
 const teacherRoutes = require('./routes/teacher');
+const courseRoutes = require('./routes/course');
+
 
 
 const init = async () => {
@@ -19,6 +21,7 @@ const init = async () => {
     server.route(adminRoutes);
     server.route(studentRoutes);
     server.route(teacherRoutes);
+    server.route(courseRoutes);
 
 };
 

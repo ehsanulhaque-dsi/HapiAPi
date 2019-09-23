@@ -23,9 +23,9 @@ const studentSchema = new Schema({
         type : String,
         required : true
     },
-    teacherId : [{ 
+    courses : [{ 
         type : Schema.Types.ObjectId,
-        ref : 'Teacher'
+        ref : 'Course'
     }]
 
 });

@@ -1,8 +1,20 @@
 const Teacher = require('../models/teacher');
 
 exports.getTeacherList = (req, res) => {
-    console.log('Showing teacher list');
-    return '';
+    return Teacher
+        .find()
+        .then(teachers => {
+            if (!teachers) {
+                return 'No student found';
+            }
+            else {
+                return teachers;
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            return err;
+        });
 
 }
 
@@ -18,23 +30,22 @@ exports.postRegisterTeacher = (req, res) => {
         lastName: req.payload.lastName,
         email: req.payload.email,
         userId: req.payload.userId,
-        dept : req.payload.dept,
-        studentId : req.payload.studentId
+        dept: req.payload.dept
 
     })
-    console.log(teacher);
-
-    teacher
-    .save()
-    .then(teacher => {
-        console.log(teacher);
-    })
-    .catch(err => {
-        console.log(err);
-    });
-    console.log('Showing post teacher register page');
-    return '';
-
+    return teacher
+        .save()
+        .then(teacher => {
+            if (teacher) {
+                return (teacher);
+            }else{
+                return 'No teacher created!';
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            return err;
+        });
 }
 
 exports.getEditTeacher = (req, res) => {
