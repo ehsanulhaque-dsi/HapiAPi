@@ -23,10 +23,10 @@ const teacherSchema = new Schema({
         type : String,
         required : true
     },
-    courses : [{ 
+    course : { 
         type : Schema.Types.ObjectId,
         ref : 'Course'
-    }]
+    }
 });
 
 module.exports = mongoose.model('Teacher', teacherSchema);

@@ -3,25 +3,18 @@ const Student = require('../models/student');
 exports.getStudentList = (req, res) => {
     return Student
         .find()
+        .populate('courses')
         .then(students => {
             if (!students) {
-                return 'No student found';
+                return res.response('Student not found').code(404);
             }
             else {
-                console.log(students);
-                return students;
+                return res.response(students).code(200);
             }
         })
         .catch(err => {
-            console.log(err);
             return err;
         });
-
-}
-
-exports.getRegisterStudent = (req, res) => {
-    console.log('Showing student register page');
-    return '';
 
 }
 
@@ -33,17 +26,16 @@ exports.postRegisterStudent = (req, res) => {
         userId: req.payload.userId,
         dept: req.payload.dept
     });
-    console.log(student);
 
     return student
         .save()
         .then(student => {
-            if(!student){
-                return 'Student not created.!';
+            if (!student) {
+                return res.response('Student not created.!').code(500);
             }
-            else{
+            else {
                 console.log(student);
-                return student;
+                return res.response('Student created.!').code(201);
             }
         })
         .catch(err => {
@@ -56,14 +48,13 @@ exports.getStudentById = (req, res) => {
     const _id = req.params.id;
     return Student
         .findById(_id)
+        .populate('courses')
         .then(student => {
             if (student) {
-                console.log(student);
-                std = student
-                return student;
+                return res.response(student).code(200);
             }
             else {
-                return 'No user found';
+                return res.response('Student not found.!').code(404);;
             }
 
         }).catch(err => {
@@ -95,17 +86,52 @@ exports.updateStudent = (req, res) => {
         .then(student => {
             if (student) {
                 console.log(student);
-                return student;
+                return res.response('Update successful').code(200);
             } else {
-                return 'Update nothing';
+
+                return res.response('Student not found').code(404);
+
             }
 
+        })
+        .catch(err => {
+            return err;
         });
 
 }
 
 exports.deleteStudent = (req, res) => {
-    console.log('Showing student delate page');
-    return '';
+    const _id = req.params.id;
+    console.log(_id);
+    return Student
+        .findByIdAndDelete(_id)
+        .then(result => {
+            if (!result) {
+                return res.response('Not found').code(404);
+            } else {
+                return res.response('Remove successful').code(200);
+            }
+        })
+        .catch(err => {
+            return err;
+        });
+}
 
+exports.getCoursesByStudent = (req, res) => {
+    const _id = req.params.id;
+
+    return Student
+        .findById(_id)
+        .populate('courses')
+        .then(student => {
+            if(!student){
+                return res.response('Student not found!').code(404);
+            }
+            else{
+                return res.response(student.courses).code(200);
+            }
+        })
+        .catch(err => {
+            return err;
+        });
 }
