@@ -1,9 +1,8 @@
 const Hapi = require('@hapi/hapi');
 const mongoose = require('mongoose');
 
-const studentRoutes = require('./routes/student');
-const teacherRoutes = require('./routes/teacher');
-const courseRoutes = require('./routes/course');
+const routes = require('./routes/index');
+
 
 
 
@@ -16,10 +15,7 @@ const init = async () => {
 
     await server.start();
     console.log("Server start running!!");
-    server.route(studentRoutes);
-    server.route(teacherRoutes);
-    server.route(courseRoutes);
-
+    server.route(routes);
 };
 
 mongoose
