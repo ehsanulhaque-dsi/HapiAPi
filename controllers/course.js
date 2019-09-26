@@ -1,5 +1,7 @@
 const Course = require('../models/course');
 const Student = require('../models/student');
+const Teacher = require('../models/teacher');
+
 
 exports.postAddCourse = (req, res) => {
     const course = new Course({
@@ -23,7 +25,7 @@ exports.postAddCourse = (req, res) => {
 exports.getCourseList = (req, res) => {
     return Course
         .find()
-        .populate('teachers')
+        .populate('teacher')
         .populate("students")
         .then(courses => {
             if (!courses) {
@@ -39,7 +41,27 @@ exports.getCourseList = (req, res) => {
         });
 }
 
-exports.addStudent = (req, res) => {
+exports.getCourseById = (req, res) => {
+    const _id = req.params.id;
+    return Course
+        .findById(_id)
+        .populate('teacher')
+        .populate("students")
+        .then(course => {
+            if (!course) {
+                return res.response('Course not found').code(404);
+            }
+            else {
+                return res.response(course).code(200);
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            return err;
+        });
+}
+
+exports.addCourseStudent = (req, res) => {
     const studentId = req.query.studentId;
     const courseId = req.query.courseId;
 
@@ -76,10 +98,10 @@ exports.addStudent = (req, res) => {
         });
 }
 
-exports.removeStudent = (req, res) => {
+exports.removeCourseStudent = (req, res) => {
     const studentId = req.query.studentId;
     const courseId = req.query.courseId;
-    
+
     return Course
         .findByIdAndUpdate(courseId, {
             $pull: { students: studentId }
@@ -113,15 +135,82 @@ exports.removeStudent = (req, res) => {
         });
 }
 
-exports.addTeacher = (req, res ) => {
-    /* const teacherId = req.query.teacherId;
-    console.log(teacherId);
+exports.addCourseTeacher = (req, res) => {
+    const teacherId = req.query.teacherId;
     const courseId = req.query.courseId;
     return Course
         .findByIdAndUpdate(courseId, {
             $set: { teacher: teacherId }
         })
         .then(course => {
-            return course;
-        }); */
+            if (!course) {
+                return res.response('Course not found').code(404);
+            }
+            else {
+                return Teacher
+                    .findByIdAndUpdate(teacherId, {
+                        $push: { courses: courseId }
+                    })
+                    .then(teacher => {
+                        if (!teacher) {
+                            return Course
+                                .findByIdAndUpdate(courseId, {
+                                    $set: { teacher: null }
+                                })
+                                .then(course => {
+                                    return res.response('Teacher not found').code(404);
+                                })
+                                .catch(err => {
+                                    return err;
+                                })
+                        }
+                        else {
+                            return res.response('Course teacher added successfull').code(200);
+                        }
+                    })
+                    .catch(err => {
+                        return err;
+                    });
+            }
+        });
+}
+
+exports.removeCourseTeacher = (req, res) => {
+    const teacherId = req.query.teacherId;
+    const courseId = req.query.courseId;
+    return Course
+        .findByIdAndUpdate(courseId, {
+            $set: { teacher: null }
+        })
+        .then(course => {
+            if (!course) {
+                return res.response('Course not found').code(404);
+            }
+            else {
+                return Teacher
+                    .findByIdAndUpdate(teacherId, {
+                        $pull: { courses: courseId }
+                    })
+                    .then(teacher => {
+                        if (!teacher) {
+                            return Course
+                                .findByIdAndUpdate(courseId, {
+                                    $set: { teacher: teacherId }
+                                })
+                                .then(course => {
+                                    return res.response('Teacher not found').code(404);
+                                })
+                                .catch(err => {
+                                    return err;
+                                })
+                        }
+                        else {
+                            return res.response('Course teacher remove successfull').code(200);
+                        }
+                    })
+                    .catch(err => {
+                        return err;
+                    });
+            }
+        });
 }

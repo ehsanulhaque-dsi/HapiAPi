@@ -13,7 +13,7 @@ module.exports = [
     },
     {
         method: 'GET',
-        path: '/edit-student/{id}',
+        path: '/student-byId/{id}',
         handler: studentController.getStudentById
     },
     {

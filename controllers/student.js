@@ -46,10 +46,12 @@ exports.postRegisterStudent = (req, res) => {
 
 exports.getStudentById = (req, res) => {
     const _id = req.params.id;
+    console.log(_id);
     return Student
         .findById(_id)
         .populate('courses')
         .then(student => {
+            console.log(student);
             if (student) {
                 return res.response(student).code(200);
             }
@@ -85,12 +87,9 @@ exports.updateStudent = (req, res) => {
         })
         .then(student => {
             if (student) {
-                console.log(student);
                 return res.response('Update successful').code(200);
             } else {
-
                 return res.response('Student not found').code(404);
-
             }
 
         })
@@ -101,7 +100,7 @@ exports.updateStudent = (req, res) => {
 }
 
 exports.deleteStudent = (req, res) => {
-    const _id = req.params.id;
+    /* const _id = req.params.id;
     console.log(_id);
     return Student
         .findByIdAndDelete(_id)
@@ -114,7 +113,7 @@ exports.deleteStudent = (req, res) => {
         })
         .catch(err => {
             return err;
-        });
+        }); */
 }
 
 exports.getCoursesByStudent = (req, res) => {

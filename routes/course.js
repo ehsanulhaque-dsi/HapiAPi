@@ -13,17 +13,27 @@ module.exports = [
     },
     {
         method: 'PUT',
-        path: '/add-student',
-        handler: coursetController.addStudent
+        path: '/add-courseStudent',
+        handler: coursetController.addCourseStudent
+    },
+    {
+        method: 'GET',
+        path: '/course-byId/{id}',
+        handler: coursetController.getCourseById
     },
     {
         method: 'PUT',
-        path: '/remove-student',
-        handler: coursetController.removeStudent
+        path: '/remove-courseStudent',
+        handler: coursetController.removeCourseStudent
     },
     {
         method: 'PUT',
-        path: '/add-teacher',
-        handler: coursetController.addTeacher
+        path: '/add-courseTeacher',
+        handler: coursetController.addCourseTeacher
     },
+    {
+        method: 'PUT',
+        path: '/remove-courseTeacher',
+        handler: coursetController.removeCourseTeacher
+    }
 ];

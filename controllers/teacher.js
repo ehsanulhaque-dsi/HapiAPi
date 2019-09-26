@@ -1,26 +1,22 @@
 const Teacher = require('../models/teacher');
 
 exports.getTeacherList = (req, res) => {
+    console.log("List of teacher");
     return Teacher
         .find()
+        .populate('courses')
         .then(teachers => {
+            console.log(teachers);
             if (!teachers) {
-                return 'No student found';
+                return res.response('No student found').code(404);
             }
             else {
-                return teachers;
+                return res.response(teachers).code(200);
             }
         })
         .catch(err => {
-            console.log(err);
             return err;
         });
-
-}
-
-exports.getRegisterTeacher = (req, res) => {
-    console.log('Showing teacher register page');
-    return '';
 
 }
 
@@ -37,9 +33,10 @@ exports.postRegisterTeacher = (req, res) => {
         .save()
         .then(teacher => {
             if (teacher) {
-                return (teacher);
-            }else{
-                return 'No teacher created!';
+                return res.response('Teacher Created').code(200);
+
+            } else {
+                return res.response('Teacher not Created').code(500);
             }
         })
         .catch(err => {
@@ -47,16 +44,55 @@ exports.postRegisterTeacher = (req, res) => {
             return err;
         });
 }
+exports.getTeacherById = (req, res) => {
+    const _id = req.params.id;
+    return Teacher
+        .findById(_id)
+        .populate('courses')
+        .then(teacher => {
+            if (teacher) {
+                return res.response(teacher).code(200);
+            }
+            else {
+                return res.response('Student not found.!').code(404);;
+            }
 
-exports.getEditTeacher = (req, res) => {
-    console.log('Showing teacher edit page');
-    return '';
+        }).catch(err => {
+            return err;
+        });
 
 }
 
 exports.updateTeacher = (req, res) => {
-    console.log('Showing teacher update page');
-    return '';
+    const _id = req.params.id;
+
+    const firstName = req.payload.firstName;
+    const lastName = req.payload.lastName;
+    const email = req.payload.email;
+    const userId = req.payload.userId;
+    const dept = req.payload.dept;
+
+    return Teacher
+        .findByIdAndUpdate(_id, {
+            $set: {
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                dept: dept,
+                userId: userId
+            }
+        })
+        .then(teacher => {
+            if (!teacher) {
+                return res.response('Teacher not found').code(404);
+            }
+            else {
+                return res.response('Teacher update successful').code(200);
+            }
+        })
+        .catch(err => {
+            return err;
+        });
 
 }
 
@@ -64,4 +100,23 @@ exports.deleteTeacher = (req, res) => {
     console.log('Showing teacher delate page');
     return '';
 
+}
+
+exports.getCoursesByTeacher = (req, res) => {
+    const _id = req.params.id;
+
+    return Teacher
+        .findById(_id)
+        .populate('courses')
+        .then(teacher => {
+            if (!teacher) {
+                return res.response('Student not found!').code(404);
+            }
+            else {
+                return res.response(teacher.courses).code(200);
+            }
+        })
+        .catch(err => {
+            return err;
+        });
 }
