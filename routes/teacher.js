@@ -9,6 +9,19 @@ module.exports = [
     {
         method: 'POST',
         path: '/register-teacher',
+        options: {
+            validate: {
+                payload: Joi.object({
+
+                    firstName: Joi.string().min(5).max(15),
+                    lastName: Joi.string().min(5).max(15),
+                    email: Joi.string().email({ minDomainAtoms: 2 }),
+                    userId: Joi.string().min(5).max(10),
+                    dept: Joi.string().min(3).max(30)
+
+                }).options({ stripUnknown: true })
+            }
+        },
         handler: teacherController.postRegisterTeacher
     },
     {
