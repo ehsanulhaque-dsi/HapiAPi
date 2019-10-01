@@ -1,4 +1,5 @@
 const teacherController = require('../controllers/teacher');
+const Joi = require('@hapi/joi');
 
 module.exports = [
     {
@@ -14,9 +15,8 @@ module.exports = [
                 payload: Joi.object({
 
                     firstName: Joi.string().min(5).max(15),
-                    lastName: Joi.string().min(5).max(15),
-                    email: Joi.string().email({ minDomainAtoms: 2 }),
-                    userId: Joi.string().min(5).max(10),
+                    lastName: Joi.string().max(15),
+                    email: Joi.string().email().required(),
                     dept: Joi.string().min(3).max(30)
 
                 }).options({ stripUnknown: true })

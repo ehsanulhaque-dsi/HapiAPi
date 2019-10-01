@@ -8,19 +8,29 @@ exports.postAddCourse = (req, res) => {
         courseTitle: req.payload.courseTitle,
         courseId: req.payload.courseId
     });
-    return course
-        .save()
-        .then(course => {
-            if (!course) {
-                return res.response('Course not created').code(500);
+    return Course
+        .findOne({ courseId: course.courseId })
+        .then(isExistCourse => {
+            if (!isExistCourse) {
+                return course
+                    .save()
+                    .then(course => {
+                        if (!course) {
+                            return res.response('Course not created').code(500);
+                        }
+                        else {
+                            return res.response('Course created').code(200);
+                        }
+                    })
+                    .catch(err => {
+                        return err;
+                    });
             }
             else {
-                return res.response('Course created').code(200);
+                return res.response('Course already exists').code(400);
             }
-        })
-        .catch(err => {
-            return err;
         });
+    /*  */
 }
 exports.getCourseList = (req, res) => {
     return Course
@@ -56,7 +66,6 @@ exports.getCourseById = (req, res) => {
             }
         })
         .catch(err => {
-            console.log(err);
             return err;
         });
 }
@@ -66,36 +75,46 @@ exports.addCourseStudent = (req, res) => {
     const courseId = req.query.courseId;
 
     return Course
-        .findByIdAndUpdate(courseId, {
-            $push: { students: studentId }
-        })
-        .then(course => {
-            if (!course) {
-                return res.response('Course not found').code(404);
-            } else {
-                return Student
-                    .findByIdAndUpdate(studentId, {
-                        $push: { courses: courseId }
+        .findOne({ students: { $all: [studentId] } })
+        .then(isAdded => {
+            if (!isAdded) {
+                return Course
+                    .findByIdAndUpdate(courseId, {
+                        $push: { students: studentId }
                     })
-                    .then(student => {
-                        if (!student) {
-                            return Course
-                                .findByIdAndUpdate(courseId, {
-                                    $pull: { students: studentId }
+                    .then(course => {
+                        if (!course) {
+                            return res.response('Course not found').code(404);
+                        } else {
+                            return Student
+                                .findByIdAndUpdate(studentId, {
+                                    $push: { courses: courseId }
                                 })
-                                .then(course => {
-                                    return res.response('Student not found').code(404);
-                                })
-                                .catch(err => {
-                                    return err;
+                                .then(student => {
+                                    if (!student) {
+                                        return Course
+                                            .findByIdAndUpdate(courseId, {
+                                                $pull: { students: studentId }
+                                            })
+                                            .then(course => {
+                                                return res.response('Student not found').code(404);
+                                            })
+                                            .catch(err => {
+                                                return err;
+                                            })
+                                    }
+                                    else {
+                                        return res.response('Add successfully').code(200);
+                                    }
                                 })
                         }
-                        else {
-                            return res.response('Add successfully').code(200);
-                        }
-                    })
+                    });
             }
-        });
+            else {
+                return res.response('Already added').code(400);
+            }
+        })
+
 }
 
 exports.removeCourseStudent = (req, res) => {
@@ -138,79 +157,101 @@ exports.removeCourseStudent = (req, res) => {
 exports.addCourseTeacher = (req, res) => {
     const teacherId = req.query.teacherId;
     const courseId = req.query.courseId;
+
     return Course
-        .findByIdAndUpdate(courseId, {
-            $set: { teacher: teacherId }
-        })
-        .then(course => {
-            if (!course) {
-                return res.response('Course not found').code(404);
+        .findOne({ teacher: teacherId })
+        .then(isExist => {
+            if (isExist) {
+                return res.response('Already added').code(400);
             }
             else {
-                return Teacher
-                    .findByIdAndUpdate(teacherId, {
-                        $push: { courses: courseId }
+                return Course
+                    .findByIdAndUpdate(courseId, {
+                        $set: { teacher: teacherId }
                     })
-                    .then(teacher => {
-                        if (!teacher) {
-                            return Course
-                                .findByIdAndUpdate(courseId, {
-                                    $set: { teacher: null }
+                    .then(course => {
+                        if (!course) {
+                            return res.response('Course not found').code(404);
+                        }
+                        else {
+                            return Teacher
+                                .findByIdAndUpdate(teacherId, {
+                                    $push: { courses: courseId }
                                 })
-                                .then(course => {
-                                    return res.response('Teacher not found').code(404);
+                                .then(teacher => {
+                                    if (!teacher) {
+                                        return Course
+                                            .findByIdAndUpdate(courseId, {
+                                                $set: { teacher: null }
+                                            })
+                                            .then(course => {
+                                                return res.response('Teacher not found').code(404);
+                                            })
+                                            .catch(err => {
+                                                return err;
+                                            })
+                                    }
+                                    else {
+                                        return res.response('Course teacher added successfull').code(200);
+                                    }
                                 })
                                 .catch(err => {
                                     return err;
-                                })
+                                });
                         }
-                        else {
-                            return res.response('Course teacher added successfull').code(200);
-                        }
-                    })
-                    .catch(err => {
-                        return err;
                     });
             }
-        });
+        })
+
 }
 
 exports.removeCourseTeacher = (req, res) => {
     const teacherId = req.query.teacherId;
     const courseId = req.query.courseId;
+
     return Course
-        .findByIdAndUpdate(courseId, {
-            $set: { teacher: null }
-        })
-        .then(course => {
-            if (!course) {
-                return res.response('Course not found').code(404);
+        .findOne({ teacher: teacherId })
+        .then(isRemoved => {
+            if (!isRemoved) {
+                return res.response('Already removed!').code(400);
             }
             else {
-                return Teacher
-                    .findByIdAndUpdate(teacherId, {
-                        $pull: { courses: courseId }
+                return Course
+                    .findByIdAndUpdate(courseId, {
+                        $set: { teacher: null }
                     })
-                    .then(teacher => {
-                        if (!teacher) {
-                            return Course
-                                .findByIdAndUpdate(courseId, {
-                                    $set: { teacher: teacherId }
+                    .then(course => {
+                        if (!course) {
+                            return res.response('Course not found').code(404);
+                        }
+                        else {
+                            return Teacher
+                                .findByIdAndUpdate(teacherId, {
+                                    $pull: { courses: courseId }
                                 })
-                                .then(course => {
-                                    return res.response('Teacher not found').code(404);
+                                .then(teacher => {
+                                    if (!teacher) {
+                                        return Course
+                                            .findByIdAndUpdate(courseId, {
+                                                $set: { teacher: teacherId }
+                                            })
+                                            .then(course => {
+                                                return res.response('Teacher not found').code(404);
+                                            })
+                                            .catch(err => {
+                                                return err;
+                                            })
+                                    }
+                                    else {
+                                        return res.response('Course teacher remove successfull').code(200);
+                                    }
                                 })
                                 .catch(err => {
                                     return err;
-                                })
+                                });
                         }
-                        else {
-                            return res.response('Course teacher remove successfull').code(200);
-                        }
-                    })
-                    .catch(err => {
-                        return err;
                     });
             }
-        });
+        })
+
 }

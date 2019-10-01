@@ -15,10 +15,6 @@ const studentSchema = new Schema({
         type : String,
         required : true
     },
-    userId : {
-        type : String,
-        required : true
-    },
     dept: {
         type : String,
         required : true

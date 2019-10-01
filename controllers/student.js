@@ -23,26 +23,37 @@ exports.postRegisterStudent = (req, res) => {
         firstName: req.payload.firstName,
         lastName: req.payload.lastName,
         email: req.payload.email,
-        userId: req.payload.userId,
         dept: req.payload.dept
     });
 
-    return student
-        .save()
-        .then(student => {
-            if (!student) {
-                return res.response('Student not created.!').code(500);
+    return Student
+        .findOne({ email: student.email })
+        .then(isExistStudent => {
+            if (!isExistStudent) {
+                return student
+                    .save()
+                    .then(student => {
+                        if (!student) {
+                            return res.response('Student not created.!').code(500);
+                        }
+                        else {
+                            console.log(student);
+                            return res.response('Student created.!').code(201);
+                        }
+                    })
+                    .catch(err => {
+                        return err;
+                    });
             }
             else {
-                console.log(student);
-                return res.response('Student created.!').code(201);
+                return res.response('Student already exists').code(400);
             }
-        })
-        .catch(err => {
-            console.log(err);
+
+
         });
 
-}
+};
+
 
 exports.getStudentById = (req, res) => {
     const _id = req.params.id;
@@ -60,7 +71,6 @@ exports.getStudentById = (req, res) => {
             }
 
         }).catch(err => {
-            console.log(err);
             return err;
         });
 
@@ -73,7 +83,6 @@ exports.updateStudent = (req, res) => {
     const lastName = req.payload.lastName;
     const email = req.payload.email;
     const dept = req.payload.dept;
-    const userId = req.payload.userId;
 
     return Student
         .findByIdAndUpdate(_id, {
@@ -81,8 +90,7 @@ exports.updateStudent = (req, res) => {
                 firstName: firstName,
                 lastName: lastName,
                 email: email,
-                dept: dept,
-                userId: userId
+                dept: dept
             }
         })
         .then(student => {
@@ -123,10 +131,10 @@ exports.getCoursesByStudent = (req, res) => {
         .findById(_id)
         .populate('courses')
         .then(student => {
-            if(!student){
+            if (!student) {
                 return res.response('Student not found!').code(404);
             }
-            else{
+            else {
                 return res.response(student.courses).code(200);
             }
         })

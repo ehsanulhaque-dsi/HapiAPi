@@ -25,24 +25,31 @@ exports.postRegisterTeacher = (req, res) => {
         firstName: req.payload.firstName,
         lastName: req.payload.lastName,
         email: req.payload.email,
-        userId: req.payload.userId,
         dept: req.payload.dept
 
     })
-    return teacher
-        .save()
-        .then(teacher => {
-            if (teacher) {
-                return res.response('Teacher Created').code(200);
-
-            } else {
-                return res.response('Teacher not Created').code(500);
+    return Teacher
+        .findOne({ email: teacher.email })
+        .then(isTeacherExist => {
+            if (!isTeacherExist) {
+                return teacher
+                    .save()
+                    .then(teacher => {
+                        if (teacher) {
+                            return res.response('Teacher Created').code(200);
+                        } else {
+                            return res.response('Teacher not Created').code(500);
+                        }
+                    })
+                    .catch(err => {
+                        return err;
+                    });
+            }
+            else {
+                return res.response('Teacher already exists').code(400);
             }
         })
-        .catch(err => {
-            console.log(err);
-            return err;
-        });
+
 }
 exports.getTeacherById = (req, res) => {
     const _id = req.params.id;
@@ -69,7 +76,6 @@ exports.updateTeacher = (req, res) => {
     const firstName = req.payload.firstName;
     const lastName = req.payload.lastName;
     const email = req.payload.email;
-    const userId = req.payload.userId;
     const dept = req.payload.dept;
 
     return Teacher
@@ -78,8 +84,7 @@ exports.updateTeacher = (req, res) => {
                 firstName: firstName,
                 lastName: lastName,
                 email: email,
-                dept: dept,
-                userId: userId
+                dept: dept
             }
         })
         .then(teacher => {
